@@ -12,6 +12,7 @@ import tiktoken
 from model import MiniGPT, CONFIGS
 from sft_loader_eos import SFTDataLoaderEOS
 from lora import inject_lora, count_lora_params
+from config import CHECKPOINT_DIR, LORA_CKPT_DIR, LORA_EOS_DIR
 
 MODEL_SIZE = 'xl'
 BATCH_SIZE = 8
@@ -23,9 +24,9 @@ WEIGHT_DECAY = 0.0
 LOG_EVERY = 20
 SAVE_EVERY = 100
 
-PRETRAINED_CKPT = '/opt/yoann-test/checkpoints/step_100000.orbax'
-RESUME_LORA_CKPT = '/opt/yoann-test/lora_checkpoints/lora_step_014283.orbax'
-EOS_LORA_DIR = Path('/opt/yoann-test/lora_eos_checkpoints')
+PRETRAINED_CKPT = f'{CHECKPOINT_DIR}/step_100000.orbax'
+RESUME_LORA_CKPT = f'{LORA_CKPT_DIR}/lora_step_014283.orbax'
+EOS_LORA_DIR = Path(str(LORA_EOS_DIR))
 
 
 def main():

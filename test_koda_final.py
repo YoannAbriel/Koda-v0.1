@@ -5,6 +5,7 @@ from jax.sharding import Mesh, PartitionSpec as P, NamedSharding
 import tiktoken
 from model import MiniGPT, CONFIGS, precompute_rope_frequencies
 from lora import inject_lora
+from config import LONG_CONTEXT_DIR
 
 devices = jax.devices()
 mesh = Mesh(np.array(devices), axis_names=('data',))
@@ -32,7 +33,7 @@ print('Load final checkpoint...', flush=True)
 sharding = NamedSharding(mesh, P())
 ra = jax.tree_util.tree_map(lambda _: orbax.checkpoint.ArrayRestoreArgs(sharding=sharding), nnx.state(model))
 cp = orbax.checkpoint.PyTreeCheckpointer()
-nnx.update(model, cp.restore('/opt/yoann-test/long_context_checkpoints/long_step_001000.orbax', item=nnx.state(model), restore_args=ra))
+nnx.update(model, cp.restore(f'{LONG_CONTEXT_DIR}/long_step_001000.orbax', item=nnx.state(model), restore_args=ra))
 
 # Re-apply NTK RoPE after checkpoint load
 for block in model.blocks:

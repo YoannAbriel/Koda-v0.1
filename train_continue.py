@@ -18,6 +18,7 @@ from jax.sharding import Mesh, PartitionSpec as P, NamedSharding
 
 from model import MiniGPT, CONFIGS
 from data import StreamingDataLoader, get_tokenizer
+from config import CHECKPOINT_DIR, MARKERS_DIR
 
 
 # ── Config ─────────────────────────────────────────────────────
@@ -29,7 +30,6 @@ PEAK_LR = 1e-4                # lower than original (3e-4) since we are continui
 WEIGHT_DECAY = 0.1
 LOG_EVERY = 50
 SAVE_EVERY = 5000
-CHECKPOINT_DIR = Path('/opt/yoann-test/checkpoints')
 
 
 def is_training_allowed():
@@ -196,7 +196,7 @@ def main():
     save_checkpoint(step)
     # Create done marker for orchestrator
     from pathlib import Path
-    marker = Path('/opt/yoann-test/markers/phase1.done')
+    marker = Path(f'{MARKERS_DIR}/phase1.done')
     marker.parent.mkdir(exist_ok=True)
     marker.write_text('completed')
     print('Phase 1 marker created', flush=True)

@@ -22,6 +22,7 @@ from jax.sharding import Mesh, PartitionSpec as P, NamedSharding
 
 from model import MiniGPT, CONFIGS
 from data import StreamingDataLoader, WikiDataLoader, get_tokenizer
+from config import CHECKPOINT_DIR
 
 
 # ── Config ─────────────────────────────────────────────────────
@@ -35,7 +36,6 @@ PEAK_LR = 3e-4
 WEIGHT_DECAY = 0.1
 LOG_EVERY = 50
 SAVE_EVERY = 5000
-CHECKPOINT_DIR = Path("/opt/yoann-test/checkpoints")
 
 
 def setup_mesh():

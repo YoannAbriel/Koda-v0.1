@@ -22,8 +22,9 @@ from sft_data import (
     oasst_to_conversations,
     USER_TAG, ASSISTANT_TAG, END_TAG,
 )
+from config import KODA_ROOT
 
-BAD_INDICES_PATH = '/opt/yoann-test/bad_indices.pkl'
+BAD_INDICES_PATH = f'{KODA_ROOT}/bad_indices.pkl'
 EOS_TOKEN_ID = 50256
 
 

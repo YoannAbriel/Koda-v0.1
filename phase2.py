@@ -17,15 +17,15 @@ from sft_data import dolly_to_messages, oasst_to_conversations
 from sft_loader import encode_with_mask, pad_to_maxlen
 from lora import inject_lora, count_lora_params
 from datasets import load_dataset
+from config import CHECKPOINT_DIR, KODA_ROOT, MARKERS_DIR, SFT_V2_DIR
 
-DONE_MARKER = Path('/opt/yoann-test/markers/phase2.done')
+DONE_MARKER = Path(f'{MARKERS_DIR}/phase2.done')
 DONE_MARKER.parent.mkdir(exist_ok=True)
 if DONE_MARKER.exists():
     print('Phase 2 already done', flush=True)
     sys.exit(0)
 
-CHECKPOINT_DIR = Path('/opt/yoann-test/checkpoints')
-SFT_V2_DIR = Path('/opt/yoann-test/sft_v2_checkpoints')
+SFT_V2_DIR = Path(str(SFT_V2_DIR))
 MIN_RESPONSE_CHARS = 300
 
 # Find latest pretrain checkpoint
@@ -69,7 +69,7 @@ print(f'Filtered to {len(filtered):,} conversations with long responses', flush=
 
 # Filter bad samples (from phase1 analysis)
 import pickle
-bad_path = Path('/opt/yoann-test/bad_indices.pkl')
+bad_path = Path(f'{KODA_ROOT}/bad_indices.pkl')
 if bad_path.exists():
     with open(bad_path, 'rb') as f:
         bad = set(pickle.load(f))

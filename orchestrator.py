@@ -14,8 +14,9 @@ import os
 import signal
 from pathlib import Path
 from datetime import datetime
+from config import KODA_ROOT
 
-ROOT = Path('/opt/yoann-test')
+ROOT = Path(str(KODA_ROOT))
 MARKERS = ROOT / 'markers'
 MARKERS.mkdir(exist_ok=True)
 

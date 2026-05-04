@@ -16,15 +16,16 @@ import tiktoken
 from model import MiniGPT, CONFIGS, precompute_rope_frequencies
 from lora import inject_lora
 from datasets import load_dataset
+from config import LONG_CONTEXT_DIR, MARKERS_DIR, SFT_V2_DIR
 
-DONE_MARKER = Path('/opt/yoann-test/markers/phase3.done')
+DONE_MARKER = Path(f'{MARKERS_DIR}/phase3.done')
 DONE_MARKER.parent.mkdir(exist_ok=True)
 if DONE_MARKER.exists():
     print('Phase 3 already done', flush=True)
     sys.exit(0)
 
 # Find latest SFT v2 checkpoint
-SFT_V2_DIR = Path('/opt/yoann-test/sft_v2_checkpoints')
+SFT_V2_DIR = Path(str(SFT_V2_DIR))
 pattern = re.compile(r'sft_v2_step_(\d+)\.orbax')
 max_step = 0
 max_path = None
@@ -40,7 +41,7 @@ print(f'Loading from: {max_path}', flush=True)
 NEW_MAXLEN = 2048
 ORIG_MAXLEN = 1024
 SCALE = NEW_MAXLEN / ORIG_MAXLEN  # 4
-LONG_CKPT_DIR = Path('/opt/yoann-test/long_context_checkpoints')
+LONG_CKPT_DIR = Path(str(LONG_CONTEXT_DIR))
 
 devices = jax.devices()
 mesh = Mesh(np.array(devices), axis_names=('data',))

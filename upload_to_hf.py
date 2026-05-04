@@ -12,9 +12,10 @@ from huggingface_hub import HfApi, create_repo
 
 from model import MiniGPT, CONFIGS
 from lora import inject_lora, LoRALinear
+from config import CHECKPOINT_DIR, HF_UPLOAD_DIR, LORA_CKPT_DIR
 
 REPO_ID = "yoann/KodaLite-1.3B"
-OUTPUT_DIR = Path("/opt/yoann-test/hf_upload")
+OUTPUT_DIR = Path(str(HF_UPLOAD_DIR))
 
 devices = jax.devices()
 mesh = Mesh(np.array(devices), axis_names=("data",))
@@ -30,13 +31,13 @@ with mesh:
 sharding = NamedSharding(mesh, P())
 ra = jax.tree_util.tree_map(lambda _: orbax.checkpoint.ArrayRestoreArgs(sharding=sharding), nnx.state(model))
 cp = orbax.checkpoint.PyTreeCheckpointer()
-nnx.update(model, cp.restore("/opt/yoann-test/checkpoints/step_100000.orbax", item=nnx.state(model), restore_args=ra))
+nnx.update(model, cp.restore(f"{CHECKPOINT_DIR}/step_100000.orbax", item=nnx.state(model), restore_args=ra))
 
 # 2. Inject LoRA + load SFT weights
 print("Inject LoRA + load SFT v1...", flush=True)
 model = inject_lora(model, rank=16, alpha=32.0, rngs=nnx.Rngs(42))
 ra2 = jax.tree_util.tree_map(lambda _: orbax.checkpoint.ArrayRestoreArgs(sharding=sharding), nnx.state(model))
-nnx.update(model, cp.restore("/opt/yoann-test/lora_checkpoints/lora_step_014283.orbax", item=nnx.state(model), restore_args=ra2))
+nnx.update(model, cp.restore(f"{LORA_CKPT_DIR}/lora_step_014283.orbax", item=nnx.state(model), restore_args=ra2))
 
 # 3. Merge LoRA into base weights
 print("Merging LoRA into base weights...", flush=True)

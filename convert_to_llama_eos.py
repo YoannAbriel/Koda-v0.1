@@ -13,9 +13,10 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import save_file
 from transformers import AutoTokenizer
+from config import HF_LLAMA_EOS_DIR, HF_UPLOAD_EOS_DIR
 
-SRC = Path("/opt/yoann-test/hf_upload_eos/model.safetensors")
-OUT_DIR = Path("/opt/yoann-test/hf_llama_eos")
+SRC = Path(f"{HF_UPLOAD_EOS_DIR}/model.safetensors")
+OUT_DIR = Path(str(HF_LLAMA_EOS_DIR))
 OUT_DIR.mkdir(exist_ok=True)
 
 # ----- Load source tensors -----

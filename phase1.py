@@ -4,8 +4,9 @@ Wraps it to write a done marker on success.
 """
 import subprocess, sys
 from pathlib import Path
+from config import KODA_ROOT, MARKERS_DIR
 
-DONE_MARKER = Path("/opt/yoann-test/markers/phase1.done")
+DONE_MARKER = Path(f"{MARKERS_DIR}/phase1.done")
 DONE_MARKER.parent.mkdir(exist_ok=True)
 
 if DONE_MARKER.exists():
@@ -13,7 +14,7 @@ if DONE_MARKER.exists():
     sys.exit(0)
 
 print("Phase 1: Continue pretraining", flush=True)
-result = subprocess.run(["python3", "-u", "train_continue.py"], cwd="/opt/yoann-test")
+result = subprocess.run(["python3", "-u", "train_continue.py"], cwd=str(KODA_ROOT))
 
 if result.returncode == 0:
     DONE_MARKER.write_text("completed")

@@ -12,10 +12,11 @@ from safetensors.numpy import save_file
 
 from model import MiniGPT, CONFIGS
 from lora import inject_lora, LoRALinear
+from config import CHECKPOINT_DIR, HF_UPLOAD_EOS_DIR, LORA_EOS_DIR
 
-OUTPUT_DIR = Path("/opt/yoann-test/hf_upload_eos")
-PRETRAINED = "/opt/yoann-test/checkpoints/step_100000.orbax"
-LORA_EOS = "/opt/yoann-test/lora_eos_checkpoints/lora_eos_step_000200.orbax"
+OUTPUT_DIR = Path(str(HF_UPLOAD_EOS_DIR))
+PRETRAINED = f"{CHECKPOINT_DIR}/step_100000.orbax"
+LORA_EOS = f"{LORA_EOS_DIR}/lora_eos_step_000200.orbax"
 
 devices = jax.devices()
 mesh = Mesh(np.array(devices), axis_names=("data",))

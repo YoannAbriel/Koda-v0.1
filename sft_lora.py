@@ -16,6 +16,7 @@ import tiktoken
 from model import MiniGPT, CONFIGS
 from sft_loader import SFTDataLoader
 from lora import inject_lora, count_lora_params
+from config import CHECKPOINT_DIR, LORA_CKPT_DIR
 
 
 # ── Config ─────────────────────────────────────────────────────
@@ -28,8 +29,7 @@ PEAK_LR = 5e-5
 WEIGHT_DECAY = 0.0
 LOG_EVERY = 20
 SAVE_EVERY = 500
-PRETRAINED_CKPT = '/opt/yoann-test/checkpoints/step_100000.orbax'
-LORA_CKPT_DIR = Path('/opt/yoann-test/lora_checkpoints')
+PRETRAINED_CKPT = f'{CHECKPOINT_DIR}/step_100000.orbax'
 
 
 def main():

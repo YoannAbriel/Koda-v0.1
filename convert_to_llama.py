@@ -13,9 +13,10 @@ import torch
 from safetensors import safe_open
 from safetensors.torch import save_file
 from transformers import AutoTokenizer
+from config import HF_LLAMA_DIR, HF_UPLOAD_DIR
 
-SRC = Path("/opt/yoann-test/hf_upload/model.safetensors")
-OUT_DIR = Path("/opt/yoann-test/hf_llama")
+SRC = Path(f"{HF_UPLOAD_DIR}/model.safetensors")
+OUT_DIR = Path(str(HF_LLAMA_DIR))
 OUT_DIR.mkdir(exist_ok=True)
 
 # ----- Load source tensors -----
@@ -251,10 +252,4 @@ from transformers import AutoModelForCausalLM
 m = AutoModelForCausalLM.from_pretrained(str(OUT_DIR), torch_dtype=torch.bfloat16)
 print(f"Loaded OK. Total params: {sum(p.numel() for p in m.parameters()) / 1e9:.3f}B")
 
-# ----- Upload -----
-print("\nUploading to HuggingFace...", flush=True)
-from huggingface_hub import HfApi
-
-api = HfApi()
-api.upload_folder(folder_path=str(OUT_DIR), repo_id="YoAbriel/KodaLite-1.3B")
-print("Uploaded! https://huggingface.co/YoAbriel/KodaLite-1.3B")
+# Upload separately with `hf upload <repo_id> <OUT_DIR>` if you want to push.

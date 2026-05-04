@@ -1,11 +1,14 @@
 #!/bin/bash
-# Run my_bench.py on all comparison models + KodaLite
-set -e
-cd /opt/yoann-test
-source .venv_bench/bin/activate
+# Run my_bench.py on KodaLite + comparison ~1B models.
+#
+# Override the working dir via KODA_ROOT (defaults to ./work).
+# Override the model list by editing MODELS below.
 
-OUT=/opt/yoann-test/bench_results
-mkdir -p "$OUT"
+set -e
+
+KODA_ROOT=${KODA_ROOT:-./work}
+OUT_DIR=${BENCH_RESULTS_DIR:-$KODA_ROOT/bench_results}
+mkdir -p "$OUT_DIR"
 
 MODELS=(
   "kodalite-1.3b:YoAbriel/KodaLite-1.3B"
@@ -22,7 +25,7 @@ MODELS=(
 for entry in "${MODELS[@]}"; do
   name="${entry%%:*}"
   model_id="${entry#*:}"
-  out="$OUT/$name.json"
+  out="$OUT_DIR/$name.json"
 
   if [ -f "$out" ]; then
     echo "=== SKIP $name (already done) ==="
@@ -33,9 +36,9 @@ for entry in "${MODELS[@]}"; do
   echo "=============================="
   echo "=== $name ($model_id) ==="
   echo "=============================="
-  python3 my_bench.py "$model_id" "$out" 2>&1 | tee "$OUT/$name.log"
+  python3 my_bench.py "$model_id" "$out" 2>&1 | tee "$OUT_DIR/$name.log"
 done
 
 echo ""
 echo "=== ALL DONE ==="
-ls -la "$OUT/"
+ls -la "$OUT_DIR/"

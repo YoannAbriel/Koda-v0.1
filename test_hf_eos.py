@@ -1,8 +1,9 @@
 """Verify the EOS-fixed HF LLaMA model stops natively (no stop_strings)."""
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from config import HF_LLAMA_EOS_DIR
 
-MODEL_DIR = "/opt/yoann-test/hf_llama_eos"
+MODEL_DIR = str(HF_LLAMA_EOS_DIR)
 
 print("Loading model...", flush=True)
 tok = AutoTokenizer.from_pretrained(MODEL_DIR)

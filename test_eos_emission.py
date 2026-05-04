@@ -5,9 +5,10 @@ from jax.sharding import Mesh, PartitionSpec as P, NamedSharding
 import tiktoken
 from model import MiniGPT, CONFIGS
 from lora import inject_lora
+from config import CHECKPOINT_DIR, LORA_EOS_DIR
 
-LORA_EOS_CKPT = '/opt/yoann-test/lora_eos_checkpoints/lora_eos_step_000200.orbax'
-PRETRAINED_CKPT = '/opt/yoann-test/checkpoints/step_100000.orbax'
+LORA_EOS_CKPT = f'{LORA_EOS_DIR}/lora_eos_step_000200.orbax'
+PRETRAINED_CKPT = f'{CHECKPOINT_DIR}/step_100000.orbax'
 
 devices = jax.devices()
 mesh = Mesh(np.array(devices), axis_names=('data',))

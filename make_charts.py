@@ -14,10 +14,11 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+from config import BENCH_CHARTS_DIR, BENCH_RESULTS_DIR
 
 # Paths
-RESULTS_DIR = Path("/opt/yoann-test/bench_results")
-OUT_DIR = Path("/opt/yoann-test/bench_charts")
+RESULTS_DIR = Path(str(BENCH_RESULTS_DIR))
+OUT_DIR = Path(str(BENCH_CHARTS_DIR))
 OUT_DIR.mkdir(exist_ok=True)
 
 # Known training tokens (for scaling plot) — from papers/model cards
