@@ -1,0 +1,17 @@
+jax[cuda12]>=0.9.2
+flax>=0.12
+optax
+orbax-checkpoint
+numpy>=2.0
+
+tiktoken
+datasets
+grain
+
+safetensors
+huggingface_hub
+transformers>=4.46
+
+matplotlib
+
+torch>=2.6

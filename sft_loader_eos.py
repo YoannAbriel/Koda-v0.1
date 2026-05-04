@@ -1,0 +1,123 @@
+"""
+SFT data loader that ALSO appends <|endoftext|> (token 50256) after the
+existing <|end|> marker. This teaches the model to emit a single-token EOS
+that GGUF/llama.cpp/LM Studio recognize natively.
+
+Format:
+  <|user|>
+  ...question...
+  <|assistant|>
+  ...response...
+  <|end|><|endoftext|>   (the trailing 50256 is the new addition)
+"""
+import jax.numpy as jnp
+import random
+import pickle
+import os
+import tiktoken
+from datasets import load_dataset
+from sft_data import (
+    format_conversation,
+    dolly_to_messages,
+    oasst_to_conversations,
+    USER_TAG, ASSISTANT_TAG, END_TAG,
+)
+
+BAD_INDICES_PATH = '/opt/yoann-test/bad_indices.pkl'
+EOS_TOKEN_ID = 50256
+
+
+def encode_with_mask_eos(messages, tokenizer, maxlen):
+    tokens = []
+    mask = []
+
+    for i, msg in enumerate(messages):
+        if msg['role'] == 'user':
+            prefix = USER_TAG + '\n'
+            text = prefix + msg['content']
+            if i > 0:
+                text = '\n' + text
+            t = tokenizer.encode(text, allowed_special='all')
+            tokens.extend(t)
+            mask.extend([0] * len(t))
+        elif msg['role'] == 'assistant':
+            tag_text = '\n' + ASSISTANT_TAG + '\n'
+            tag_tokens = tokenizer.encode(tag_text, allowed_special='all')
+            tokens.extend(tag_tokens)
+            mask.extend([0] * len(tag_tokens))
+
+            content_tokens = tokenizer.encode(msg['content'], allowed_special='all')
+            tokens.extend(content_tokens)
+            mask.extend([1] * len(content_tokens))
+
+    end_text = '\n' + END_TAG
+    end_tokens = tokenizer.encode(end_text, allowed_special='all')
+    tokens.extend(end_tokens)
+    mask.extend([1] * len(end_tokens))
+
+    # NEW: append EOS token (50256) after <|end|>, with mask=1 so it contributes to loss
+    tokens.append(EOS_TOKEN_ID)
+    mask.append(1)
+
+    if len(tokens) > maxlen:
+        tokens = tokens[:maxlen]
+        mask = mask[:maxlen]
+
+    return tokens, mask
+
+
+def pad_to_maxlen(tokens, mask, maxlen, pad_token):
+    pad_len = maxlen - len(tokens)
+    if pad_len > 0:
+        tokens = tokens + [pad_token] * pad_len
+        mask = mask + [0] * pad_len
+    return tokens, mask
+
+
+class SFTDataLoaderEOS:
+    def __init__(self, maxlen, batch_size, seed=42, max_samples=None, filter_bad=True):
+        self.maxlen = maxlen
+        self.batch_size = batch_size
+        self.tokenizer = tiktoken.get_encoding('gpt2')
+        self.pad_token = EOS_TOKEN_ID
+
+        print('Loading Dolly...', flush=True)
+        dolly = load_dataset('databricks/databricks-dolly-15k', split='train')
+        dolly_msgs = [dolly_to_messages(ex) for ex in dolly]
+
+        print('Loading OASST...', flush=True)
+        oasst = load_dataset('OpenAssistant/oasst1', split='train')
+        oasst_msgs = oasst_to_conversations(oasst)
+
+        self.conversations = dolly_msgs + oasst_msgs
+        random.seed(seed)
+        random.shuffle(self.conversations)
+
+        if filter_bad and os.path.exists(BAD_INDICES_PATH):
+            with open(BAD_INDICES_PATH, 'rb') as f:
+                bad_indices = set(pickle.load(f))
+            original_count = len(self.conversations)
+            self.conversations = [
+                conv for i, conv in enumerate(self.conversations)
+                if i not in bad_indices
+            ]
+            print(f'Filtered: {original_count} -> {len(self.conversations)} ({len(bad_indices)} bad)', flush=True)
+
+        if max_samples is not None:
+            self.conversations = self.conversations[:max_samples]
+        print(f'Total conversations: {len(self.conversations):,}', flush=True)
+
+    def __iter__(self):
+        n = len(self.conversations)
+        bs = self.batch_size
+        for start in range(0, n - bs + 1, bs):
+            batch_tokens = []
+            batch_masks = []
+            for j in range(bs):
+                conv = self.conversations[start + j]
+                t, m = encode_with_mask_eos(conv, self.tokenizer, self.maxlen)
+                t, m = pad_to_maxlen(t, m, self.maxlen, self.pad_token)
+                batch_tokens.append(t)
+                batch_masks.append(m)
+            import numpy as np
+            yield np.array(batch_tokens, dtype=np.int32), np.array(batch_masks, dtype=np.int32)
